@@ -45,8 +45,9 @@ export class WorkOrderService {
   // Setup listeners for incoming messages
   private setupListeners(): void {
     this.hubConnection.on('ReceiveWorkOrderUpdate', (workOrder: any) => {
-      console.log(`Received update for WorkOrder:`, workOrder);
-    });    
+      console.log(workOrder);
+      this.workOrderUpdatesSource.next({ workOrder });
+    });
   }
 
   // Subscribe to work order updates by company and location

@@ -159,7 +159,6 @@ public class WorkOrderService : IWorkOrderService
         }
     }
 
-
     public async Task<bool> UpdateWorkOrderStatusAsync(long id, int statusUpdate)
     {
         try
@@ -191,7 +190,7 @@ public class WorkOrderService : IWorkOrderService
             await _unitOfWork.SaveChangesAsync();
 
             var groupName = $"Company_{workOrder.CompanyId}_Location_{workOrder.LocationId}";
-            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveWorkOrderUpdate", workOrder);
+            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveWorkOrderUpdate", workOrder.TaskStatus.StatusName);
 
             return true;
         }

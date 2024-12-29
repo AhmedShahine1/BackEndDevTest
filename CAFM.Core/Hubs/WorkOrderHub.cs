@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using CAFM.Database.Models;
+using Microsoft.AspNetCore.SignalR;
 
 namespace CAFM.Core.Hubs
 {
@@ -22,6 +23,7 @@ namespace CAFM.Core.Hubs
 
             // Add the client to the group
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+            await Clients.Group(groupName).SendAsync("ReceiveWorkOrderUpdate", "Subscribe To Work Order Updates ");
         }
 
         // Method to unsubscribe from work order updates

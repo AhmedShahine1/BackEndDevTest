@@ -1,13 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { WorkOrderService } from '../work-order.service';
-import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-work-order-list',
-  imports: [CommonModule],
+  imports :[CommonModule],
   templateUrl: './work-order-list.component.html',
-  styleUrl: './work-order-list.component.css'
+  styleUrls: ['./work-order-list.component.css']
 })
 export class WorkOrderListComponent implements OnInit, OnDestroy {
   companyId: number | null = null;
@@ -19,23 +19,28 @@ export class WorkOrderListComponent implements OnInit, OnDestroy {
   constructor(private route: ActivatedRoute, private workOrderService: WorkOrderService) {}
 
   ngOnInit(): void {
-    const companyIdParam = 1;
-    const locationIdParam = 1;
-    console.log('Parm:', this.route.snapshot.paramMap);
-    console.log('Company ID:', companyIdParam);
-    console.log('Location ID:', locationIdParam);
-  
+    const companyIdParam = 1; // Replace with actual value if required
+    const locationIdParam = 1; // Replace with actual value if required
+
     if (companyIdParam && locationIdParam) {
-      this.companyId = +companyIdParam;  // Convert to number
-      this.locationId = +locationIdParam;  // Convert to number
-  
+      this.companyId = +companyIdParam; // Convert to number
+      this.locationId = +locationIdParam; // Convert to number
+
       // Subscribe to work order updates
       this.workOrderService.subscribeToWorkOrderUpdates(this.companyId, this.locationId);
+
+      // Subscribe to the updates observable
+      this.workOrderService.workOrderUpdates$.subscribe(update => {
+        if (update) {
+          this.workOrderId = update.workOrder?.id || null; // Assuming `id` exists in the work order object
+          this.message = update.workOrder?.message || null; // Assuming `message` exists
+          this.statusHistory = update.workOrder?.statusHistory || []; // Assuming `statusHistory` exists
+        }
+      });
     } else {
       console.error('Invalid or missing route parameters');
     }
   }
-    
 
   ngOnDestroy(): void {
     // Unsubscribe when the component is destroyed
