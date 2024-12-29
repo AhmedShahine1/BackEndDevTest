@@ -3,7 +3,7 @@ import { WorkOrderListComponent } from './work-order-list/work-order-list.compon
 
 export const routes: Routes = [
     {
-        path: 'workorder/',
+        path: 'workorder/:Companyid/:LocationId',
         component: WorkOrderListComponent
       },
 ];

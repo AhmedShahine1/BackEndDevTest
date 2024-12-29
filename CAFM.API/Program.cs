@@ -22,12 +22,7 @@ namespace CAFM.API
                 options.AddPolicy("CORSPolicy", builder => builder.AllowAnyMethod().AllowAnyHeader().AllowCredentials().SetIsOriginAllowed((hosts) => true));
             });
 
-            builder.Services.AddControllers()
-                       .AddJsonOptions(options =>
-                       {
-                           options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
-                           options.JsonSerializerOptions.MaxDepth = 64; // Optionally, increase the max depth if needed
-                       });            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 

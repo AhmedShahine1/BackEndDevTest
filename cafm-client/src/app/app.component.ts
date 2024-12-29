@@ -4,7 +4,7 @@ import { WorkOrderListComponent } from "./work-order-list/work-order-list.compon
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, WorkOrderListComponent],
+  imports: [WorkOrderListComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

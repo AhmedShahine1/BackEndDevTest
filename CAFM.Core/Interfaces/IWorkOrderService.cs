@@ -1,4 +1,5 @@
-﻿using CAFM.Database.Models;
+﻿using CAFM.Core.DTO;
+using CAFM.Database.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,8 @@ namespace CAFM.Core.Interfaces
     {
         Task<long> SaveWorkOrderAsync(WorkOrder workOrder);
         Task<long> GenerateInternalNumberAsync();
-        Task<WorkOrder?> GetWorkOrderByIdAsync(long workOrderId);
         Task<bool> UpdateWorkOrderStatusAsync(long id, int statusUpdate);
+        Task<IEnumerable<WorkOrderDTO>> GetAllWorkOrderAsync();
+        Task<WorkOrderDTO> GetWorkOrderByIdAsync(long workOrderId);
     }
 }

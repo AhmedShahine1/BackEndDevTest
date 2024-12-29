@@ -1,4 +1,5 @@
-﻿using CAFM.Core.Hubs;
+﻿using CAFM.Core.DTO;
+using CAFM.Core.Hubs;
 using CAFM.Core.Interfaces;
 using CAFM.Database.Models;
 using Microsoft.AspNetCore.SignalR;
@@ -33,9 +34,10 @@ public class WorkOrderService : IWorkOrderService
             await _unitOfWork.SaveChangesAsync();
 
             var groupName = $"Company_{workOrder.CompanyId}_Location_{workOrder.LocationId}";
-            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveWorkOrderUpdate", workOrder.Id, workOrder.TaskStatus.StatusName);
+            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveWorkOrderUpdate", workOrder);
 
             await transaction.CommitAsync();
+            _unitOfWork.Dispose();
             return workOrder.Id;
         }
         catch (ArgumentException ex)
@@ -60,7 +62,7 @@ public class WorkOrderService : IWorkOrderService
         return lastInternalNumber + 1;
     }
 
-    public async Task<WorkOrder?> GetWorkOrderByIdAsync(long workOrderId)
+    public async Task<WorkOrderDTO> GetWorkOrderByIdAsync(long workOrderId)
     {
         try
         {
@@ -68,39 +70,38 @@ public class WorkOrderService : IWorkOrderService
             if (workOrder == null)
                 throw new KeyNotFoundException($"WorkOrder with ID {workOrderId} not found.");
 
-            // Fetch related details, wrapped in individual try-catch blocks for each related entity (to handle specific errors)
-
-            // Handle WorkOrderDetails fetching
-            try
+            // Map the WorkOrder entity to WorkOrderDTO
+            return new WorkOrderDTO
             {
-                workOrder.WorkOrderDetails = (await _unitOfWork.WorkOrderDetailRepository.FindAllAsync(w => w.WorkOrderId == workOrderId)).ToList();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while fetching WorkOrder details.");
-                throw;
-            }
-
-            // Handle Asset fetching
-            try
-            {
-                if (workOrder.AssetId.HasValue)
-                    workOrder.Asset = await _unitOfWork.AssetRepository.GetByIdAsync(workOrder.AssetId.Value);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error while fetching Asset.");
-                throw;
-            }
-
-            // Other related entities fetch can be similarly wrapped
-
-            return workOrder;
+                Id = workOrder.Id,
+                CompanyId = workOrder.CompanyId,
+                LocationId = workOrder.LocationId,
+                InternalNumber = workOrder.InternalNumber,
+                TaskName = workOrder.TaskName,
+                TaskDescription = workOrder.TaskDescription,
+                CreatedDate = workOrder.CreatedDate,
+                ModifiedDate = workOrder.ModifiedDate,
+                StartDate = workOrder.StartDate,
+                DueDate = workOrder.DueDate,
+                TaskAssignmentId = workOrder.TaskAssignmentId,
+                EstimatedTime = workOrder.EstimatedTime,
+                TaskTypeId = workOrder.TaskTypeId,
+                CompletionDate = workOrder.CompletionDate,
+                CompletionNote = workOrder.CompletionNote,
+                CompletionRatio = workOrder.CompletionRatio,
+                AssetDownTime = workOrder.AssetDownTime,
+                IsDeleted = workOrder.IsDeleted,
+                CreatedBy = workOrder.CreatedBy,
+                Asset = workOrder.Asset,
+                Priority = workOrder.Priority,
+                TaskStatus = workOrder.TaskStatus,
+                WorkOrderDetails = workOrder.WorkOrderDetails,
+            };
         }
         catch (KeyNotFoundException ex)
         {
             _logger.LogError(ex, "WorkOrder not found.");
-            throw; // Rethrow to be caught by controller
+            throw;
         }
         catch (Exception ex)
         {
@@ -108,6 +109,56 @@ public class WorkOrderService : IWorkOrderService
             throw new Exception("An error occurred while processing your request.", ex);
         }
     }
+
+    public async Task<IEnumerable<WorkOrderDTO>> GetAllWorkOrderAsync()
+    {
+        try
+        {
+            // Fetch all WorkOrder entities
+            var workOrders = await _unitOfWork.WorkOrderRepository.GetAllAsync();
+
+            // Map entities to DTOs
+            var workOrderDTOs = workOrders.Select(wo => new WorkOrderDTO
+            {
+                Id = wo.Id,
+                CompanyId = wo.CompanyId,
+                LocationId = wo.LocationId,
+                InternalNumber = wo.InternalNumber,
+                TaskName = wo.TaskName,
+                TaskDescription = wo.TaskDescription,
+                CreatedDate = wo.CreatedDate,
+                ModifiedDate = wo.ModifiedDate,
+                StartDate = wo.StartDate,
+                DueDate = wo.DueDate,
+                TaskAssignmentId = wo.TaskAssignmentId,
+                EstimatedTime = wo.EstimatedTime,
+                TaskTypeId = wo.TaskTypeId,
+                CompletionDate = wo.CompletionDate,
+                CompletionNote = wo.CompletionNote,
+                CompletionRatio = wo.CompletionRatio,
+                AssetDownTime = wo.AssetDownTime,
+                IsDeleted = wo.IsDeleted,
+                CreatedBy = wo.CreatedBy,
+                Asset = wo.Asset, // Map directly if no further transformation needed
+                Priority = wo.Priority, // Map directly
+                TaskStatus = wo.TaskStatus, // Map directly
+                WorkOrderDetails = wo.WorkOrderDetails // Map directly if no transformation is required
+            });
+
+            return workOrderDTOs;
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogError(ex, "WorkOrder not found.");
+            throw; // Rethrow to be caught by the controller
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while fetching the WorkOrder.");
+            throw new Exception("An error occurred while processing your request.", ex);
+        }
+    }
+
 
     public async Task<bool> UpdateWorkOrderStatusAsync(long id, int statusUpdate)
     {
@@ -134,14 +185,13 @@ public class WorkOrderService : IWorkOrderService
             if (status.IsCompleted)
             {
                 workOrder.CompletionDate = DateTime.UtcNow;
-                workOrder.CompletionRatio = 100;
             }
 
             _unitOfWork.WorkOrderRepository.Update(workOrder);
             await _unitOfWork.SaveChangesAsync();
 
             var groupName = $"Company_{workOrder.CompanyId}_Location_{workOrder.LocationId}";
-            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveWorkOrderUpdate", workOrder.Id, workOrder.TaskStatus.StatusName);
+            await _hubContext.Clients.Group(groupName).SendAsync("ReceiveWorkOrderUpdate", workOrder);
 
             return true;
         }

@@ -14,7 +14,7 @@ export class WorkOrderService {
 
   constructor() {
     this.hubConnection = new HubConnectionBuilder()
-      .withUrl('http://localhost:5232/workOrderHub') // Replace with your SignalR hub URL
+      .withUrl('http://localhost:7097/workOrderHub') // Replace with your SignalR hub URL
       .build();
 
     this.setupListeners();

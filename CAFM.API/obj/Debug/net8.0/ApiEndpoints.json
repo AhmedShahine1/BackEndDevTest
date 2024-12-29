@@ -17,6 +17,16 @@
   },
   {
     "ContainingType": "WorkOrderController",
+    "Method": "GetWorkOrder",
+    "RelativePath": "api/WorkOrder",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "WorkOrderController",
     "Method": "GetWorkOrderById",
     "RelativePath": "api/WorkOrder/{id}",
     "HttpMethod": "GET",

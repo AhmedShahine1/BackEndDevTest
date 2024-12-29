@@ -80,6 +80,29 @@ public class WorkOrderController : ControllerBase
         }
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetWorkOrder()
+    {
+        try
+        {
+            var workOrder = await _workOrderService.GetAllWorkOrderAsync();
+            if (workOrder == null)
+                return NotFound();
+
+            return Ok(workOrder);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogError(ex, "WorkOrder not found.");
+            return NotFound();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while fetching the work order.");
+            return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again.");
+        }
+    }
+
     [HttpPut("{id}/status")]
     public async Task<IActionResult> UpdateWorkOrderStatus(long id, [FromBody] int statusUpdate)
     {
@@ -97,4 +120,5 @@ public class WorkOrderController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again.");
         }
     }
+
 }
