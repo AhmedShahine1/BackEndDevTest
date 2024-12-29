@@ -14,7 +14,7 @@ export class WorkOrderService {
 
   constructor() {
     this.hubConnection = new HubConnectionBuilder()
-      .withUrl('http://localhost:7097/workOrderHub') // Replace with your SignalR hub URL
+      .withUrl('https://localhost:7097/workOrderHub') // Replace with your SignalR hub URL
       .build();
 
     this.setupListeners();
@@ -44,9 +44,9 @@ export class WorkOrderService {
 
   // Setup listeners for incoming messages
   private setupListeners(): void {
-    this.hubConnection.on('ReceiveWorkOrderUpdate', (workOrderId: number, message: string) => {
-      this.workOrderUpdatesSource.next({ workOrderId, message });
-    });
+    this.hubConnection.on('ReceiveWorkOrderUpdate', (workOrder: any) => {
+      console.log(`Received update for WorkOrder:`, workOrder);
+    });    
   }
 
   // Subscribe to work order updates by company and location
